@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weather Display</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; background: #f0f4f8; }
+        .weather-container { background: #fff; padding: 2rem; border-radius: 8px; max-width: 400px; margin: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1);}
+        .city-name { font-size: 2rem; font-weight: bold; margin-bottom: 1rem; }
+        .weather-info { margin-bottom: 1.5rem; }
+        .weather-info div { margin-bottom: 0.5rem; }
+        .city-facts { background: #e9ecef; padding: 1rem; border-radius: 6px; }
+        .facts-title { font-weight: bold; margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+    <div class="weather-container">
+        <div class="city-name" id="cityName">City Name</div>
+        <div class="weather-info">
+            <div>Temperature: <span id="temperature">--</span>°C</div>
+            <div>Humidity: <span id="humidity">--</span>%</div>
+            <div>Time: <span id="time">--:--</span></div>
+            <div>Timezone: <span id="timezone">--</span></div>
+        </div>
+        <div class="city-facts">
+            <div class="facts-title">City Facts</div>
+            <ul id="factsList">
+                <!-- Facts go here -->
+            </ul>
+        </div>
+    </div>
+    <script>
+    async function getWeather() {
+
+        // Get the current latitude and longitude from the boxes
+        let latitude;
+        let longitude;
+        fetch('/api/data', { // this will not work as we are going from the new
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            latitude = data.data.latitude;
+            longitude = data.data.longitude;
+        })
+
+        try {
+            const response = await fetch('/api/weather', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ latitude, longitude })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Unknown error');
+            }
+
+            const data = await response.json();
+            alert(`Weather: ${JSON.stringify(data)}`);
+            console.log('Weather data:', data);
+        } catch (error) {
+            console.error("Error fetching weather data:", error);
+            alert("Error fetching weather data: " + error.message);
+        }
+    }
+    let weather = getWeather();
+    </script>
+</body>
+</html>

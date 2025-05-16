@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style> .clickbox {
+        width: 150px;
+        height: 20px;
+        background-color: lightgray;
+        margin: 10px;
+        display: inline-block;
+    } </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+</head>
+<body>
+    <h1>Weather App</h1>
+    <div class="clickbox" onclick="getLatitude()" id="latitude-box">
+        Enter Latitude
+    </div>
+    <div class="clickbox" onclick="getLongitude()" id="longitude-box">
+        Enter Longitude
+    </div>
+    <div class="clickbox" onclick="getWeather()">
+        Get Weather
+    </div>
+    <a href="./weatherDisplay.html">link text</a>
+  <script>
+    async function persistence() {
+        // I want to get the new values of latitude and longitude
+        fetch('/api/data', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateLatitudeBox(data.data.latitude);
+            updateLongitudeBox(data.data.longitude);
+        })
+    }
+
+    function updateLatitudeBox(value) {
+        document.getElementById('latitude-box').textContent = value;
+    }
+    function updateLongitudeBox(value) {
+        document.getElementById('longitude-box').textContent = value;
+    }
+    async function getLatitude() {
+        latitude = prompt("Enter your latitude:"); // don't modify latitude
+        fetch('/api/latitude', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ latitude })
+        })
+        .then(response => {
+            if (!response.ok) {
+                // If the response is not OK (e.g., 400, 404, 500)
+                return response.json().then(errorData => {
+                    throw new Error(errorData.error || 'Unknown error');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                // If the server sends an error field, handle that here
+                throw new Error(data.error);
+            }
+            latitude = data.latitude;
+            updateLatitudeBox(latitude);
+            alert(`latitude entered: ${latitude}`);
+            console.log(`User entered latitude: ${latitude}`);
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("latitude entered is invalid.");
+        });
+    }     
+    async function getLongitude() {
+        longitude = prompt("Enter your longitude:");
+        fetch('/api/longitude', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ longitude })
+        })
+        .then(response => {
+            if (!response.ok) {
+                // If the response is not OK (e.g., 400, 404, 500)
+                return response.json().then(errorData => {
+                    throw new Error(errorData.error || 'Unknown error');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                // If the server sends an error field, handle that here
+                throw new Error(data.error);
+            }
+            longitude = data.longitude;
+            updateLongitudeBox(longitude);
+            alert(`Longitude entered: ${longitude}`);
+            console.log(`User entered longitude: ${longitude}`);
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Longitude entered is invalid.");
+        });
+    }
+    persistence(); // we call perstitence each time we load the page
+    </script>
+</body>
+</html>
